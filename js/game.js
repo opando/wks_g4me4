@@ -23,8 +23,10 @@ function Monster(){
 	this.img = new Image();
 	this.img.src = "images/monster1.png";
 	this.cont = 0;
+	this.show = true;
 	this.draw = function(){
 
+		if(this.show)
 		ctx.drawImage(this.img,this.x,this.y);
 
 	};
@@ -52,8 +54,10 @@ function Misil(x,y){
 	this.y = y - this.h;
 	this.img = new Image();
 	this.img.src = "images/misil.png";
+	this.show = true;
 	this.draw = function(){
 
+		if(this.show)
 		ctx.drawImage(this.img,this.x,this.y);
 
 	};
@@ -97,9 +101,7 @@ function Nave(){
 nave = new Nave();
 
 function update(){
-
-	
-	
+		
 	nave.move();
 	for (var i = 0; i < monsters.length; i++) {
 		monsters[i].move();
@@ -117,7 +119,7 @@ function draw(){
 	ctx.fillRect(0,0,w,h);
 
 	//Crear un  nuevo mounstro
-	if(Math.random()<0.25){
+	if(Math.random()<0.025){
 
 		monsters.push(new Monster());
 	}
@@ -158,21 +160,20 @@ function hayChoque(misil,mounstro){
 	if(d<=dmin) return true;
 	else return false;
 }
+
 function colision(){
 
-	var misil, mounstro;
+	
 	for (var i = 0; i < misiles.length; i++) {
-		misil = misiles[i];
+		
 
-		for (var j = 0; j < monsters.length; j++) {
-			mounstro = monsters[j];
+		for (var j = 0; misiles[i].show && j < monsters.length ; j++) {
+		
 
-			if(hayChoque(misil,mounstro)){
+			if(monsters[j].show  && hayChoque(misiles[i],monsters[j])){
 				//alert("choque");
-				 monsters = monsters.splice(j,1);
-				 misiles = misiles.splice(i,1);
-				 
-				 
+				 monsters[j].show = false;
+				 misiles[i].show = false;				 
 			}
 
 		}
