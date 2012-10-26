@@ -1,6 +1,7 @@
 var c, ctx, w, h, FPS = 60;
 var monsters=[];
 var misiles=[];
+var rockets=[];
 var nave;
 var moveRight = false;
 var moveLeft = false;
@@ -11,7 +12,7 @@ ctx = c.getContext('2d');
 w = c.width = 800;
 h = c.height = 600;
 
-
+var score=0;
 
 function Monster(){
 	this.x = Math.random()*w;
@@ -53,7 +54,7 @@ function Misil(x,y){
 	this.x = x;
 	this.y = y - this.h;
 	this.img = new Image();
-	this.img.src = "images/misil.png";
+	this.img.src = "images/Misil.png"; // misil => Misil
 	this.show = true;
 	this.draw = function(){
 
@@ -91,11 +92,26 @@ function Nave(){
 
 		if(moveRight){
 			this.x += this.vx;
+			// Para no salirse del canvas x la derecha
+			if( this.x + this.w > w )
+				this.x = w - this.w;
 		}
 		if(moveLeft){
 			this.x -= this.vx;
+			// Para no salirse del canvas x la izquierda
+			if( this.x < 0 )
+				this.x = 0;
 		}
 		
+	};
+	this.shoot = function() {
+		// Simplemente se crea un misil base para la nave en x, y 
+		//
+		//
+		//			  !	  misil base en x, y
+		//			 # #
+		//			##### nave
+		misiles.push(new Misil (this.x, this.y));
 	};
 }
 nave = new Nave();
@@ -173,11 +189,17 @@ function colision(){
 			if(monsters[j].show  && hayChoque(misiles[i],monsters[j])){
 				//alert("choque");
 				 monsters[j].show = false;
-				 misiles[i].show = false;				 
+				 misiles[i].show = false;
+				 score++;
 			}
 
 		}
 	}
+
+	//Para cuando choquen enemigos con la nave 
+	//for(var i = 0; i < monsters.length; i++ )
+	// 	if(monsters[i].show && hayChoque( monsters[i], new Nave(nave.x, nave.y)) )
+			//Hacer algo: perder una vida || perder juego || mostrar puntajes || reiniciar
 }
 
 var gameLoop = function(){
