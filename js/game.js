@@ -1,28 +1,48 @@
 var c, ctx, w, h, FPS = 60;
-var monsters=[];
+var enemigos=[];
 var misiles=[];
-var rockets=[];
+var explosiones=[];
 var nave;
 var moveRight = false;
 var moveLeft = false;
 var disparo = false;
+var soundExplosion = new Audio("sound/explosion.wav");
+var soundDisparo = new Audio("sound/disparo.wav");
 
 c = document.getElementById('c'), 
 ctx = c.getContext('2d');
 w = c.width = 800;
-h = c.height = 600;
+h = c.height = 700;
 
 var score=0;
+function Explosion(x,y){
+	this.x = x;
+	this.y = y;
+	this.w = 120;
+	this.h = 120;
 
-function Monster(){
+	this.img = new Image();
+	this.img.src = "images/explosion.png";
+	//x,y,w,h
+	this.explosionFrames = [[0,0,120,120],[120,0,120,120],[240,0,120,120],[360,0,120,120],[480,0,120,120],
+					[600,0,120,120],[720,0,120,120],[840,0,120,120],[960,0,120,120],[1080,0,120,120]];
+	this.sprite = new Sprite(this.img, this.explosionFrames, this.x,this.y);
+	this.draw = function(){
+
+		this.sprite.draw();
+
+	};
+
+}
+function Enemigo(){
 	this.x = Math.random()*w;
 	this.y = 0;
 	this.vx = Math.random()*10;
 	this.vy = Math.random()*3;
-	this.w = 48;
-	this.h = 48;
+	this.w = 120;
+	this.h = 120;
 	this.img = new Image();
-	this.img.src = "images/monster1.png";
+	this.img.src = "images/enemigo.png";
 	this.cont = 0;
 	this.show = true;
 	this.draw = function(){
@@ -58,16 +78,15 @@ function Misil(x,y){
 	this.show = true;
 	this.draw = function(){
 
-		if(this.show)
-		ctx.drawImage(this.img,this.x,this.y);
+		if(this.show){
+			ctx.drawImage(this.img,this.x,this.y);
+
+		}
 
 	};
-	this.move = function(){
-
+	this.move = function(){		
 		
-		
-		this.y -= this.vy;
-		
+		this.y -= this.vy;		
 		
 	};
 }
@@ -105,12 +124,7 @@ function Nave(){
 		
 	};
 	this.shoot = function() {
-		// Simplemente se crea un misil base para la nave en x, y 
-		//
-		//
-		//			  !	  misil base en x, y
-		//			 # #
-		//			##### nave
+		
 		misiles.push(new Misil (this.x, this.y));
 	};
 }
@@ -119,8 +133,8 @@ nave = new Nave();
 function update(){
 		
 	nave.move();
-	for (var i = 0; i < monsters.length; i++) {
-		monsters[i].move();
+	for (var i = 0; i < enemigos.length; i++) {
+		enemigos[i].move();
 	}
 
 	for (var i = 0; i < misiles.length; i++) {
@@ -134,16 +148,21 @@ function draw(){
 	ctx.fillStyle = "rgb(F,F,F,F)";
 	ctx.fillRect(0,0,w,h);
 
-	//Crear un  nuevo mounstro
-	if(Math.random()<0.025){
+	//Crear un  nuevo enemigo
+	if(Math.random()<0.01){
 
-		monsters.push(new Monster());
+		enemigos.push(new Enemigo());
 	}
 
 	
-	//dibujar mounstro
-	for (var i = 0; i < monsters.length; i++) {
-		monsters[i].draw();
+	//dibujar enemigo
+	for (var i = 0; i < enemigos.length; i++) {
+		enemigos[i].draw();
+	}
+
+	//Dibujar explosiones
+	for (var i = 0; i < explosiones.length; i++) {
+		explosiones[i].draw();
 	}
 	//dibujar Nave
 	nave.draw();
@@ -151,30 +170,23 @@ function draw(){
 	//dibujar misil;
 	if(disparo){
 		misiles.push(new Misil(nave.x + ( nave.w )/2,nave.y));
+		soundDisparo.play();
 		disparo = false;
 	}
 	for (var i = 0; i < misiles.length; i++) {
 		misiles[i].draw();
+
 	}
 	
 }
 
-function hayChoque(misil,mounstro){
+function hayChoque(misil,enemigo){
 
-	var x1 = misil.x + (misil.w)/2;
-	var y1 = misil.y + (misil.h)/2;
+	return enemigo.x + enemigo.w > misil.x &&
+			misil.x + misil.w > enemigo.x &&
+			enemigo.y + enemigo.h > misil.y &&
+			misil.y + misil.h > enemigo.y
 
-	var x2 = mounstro.x + (mounstro.w)/2;
-	var y2 = mounstro.y + (mounstro.h)/2;
-
-	//alert("x1 :" + x1 +", x2 :" +x2 + "y1 :" + y1 +", y2 :" + y2 );
-
-	var d = Math.sqrt( Math.pow((x1-x2),2) + Math.pow((y1-y2),2) );
-	var dmin= (mounstro.h)/2 + (misil.h)/2;
-	//alert("d :" + d +", dmin :" +dmin);
-	
-	if(d<=dmin) return true;
-	else return false;
 }
 
 function colision(){
@@ -183,23 +195,21 @@ function colision(){
 	for (var i = 0; i < misiles.length; i++) {
 		
 
-		for (var j = 0; misiles[i].show && j < monsters.length ; j++) {
+		for (var j = 0; misiles[i].show && j < enemigos.length ; j++) {
 		
 
-			if(monsters[j].show  && hayChoque(misiles[i],monsters[j])){
+			if(enemigos[j].show  && hayChoque(misiles[i],enemigos[j])){
 				//alert("choque");
-				 monsters[j].show = false;
+				 enemigos[j].show = false;
 				 misiles[i].show = false;
+				 explosiones.push(new Explosion(enemigos[j].x,enemigos[j].y));
+				 soundExplosion.play();
 				 score++;
 			}
 
 		}
 	}
 
-	//Para cuando choquen enemigos con la nave 
-	//for(var i = 0; i < monsters.length; i++ )
-	// 	if(monsters[i].show && hayChoque( monsters[i], new Nave(nave.x, nave.y)) )
-			//Hacer algo: perder una vida || perder juego || mostrar puntajes || reiniciar
 }
 
 var gameLoop = function(){
