@@ -14,7 +14,6 @@ ctx = c.getContext('2d');
 w = c.width = 800;
 h = c.height = 700;
 
-
 var score=0;
 function Explosion(x,y){
 	this.x = x;
@@ -30,7 +29,7 @@ function Explosion(x,y){
 	this.sprite = new Sprite(this.img, this.explosionFrames, this.x,this.y);
 	this.draw = function(){
 
-		this.sprite.update();
+		this.sprite.draw();
 
 	};
 
@@ -40,8 +39,8 @@ function Enemigo(){
 	this.y = 0;
 	this.vx = Math.random()*10;
 	this.vy = Math.random()*3;
-	this.w = 80;
-	this.h = 80;
+	this.w = 120;
+	this.h = 120;
 	this.img = new Image();
 	this.img.src = "images/enemigo.png";
 	this.cont = 0;
@@ -75,7 +74,7 @@ function Misil(x,y){
 	this.x = x;
 	this.y = y - this.h;
 	this.img = new Image();
-	this.img.src = "images/Misil.png"; // misil => Misil
+	this.img.src = "images/Misil.png"; 
 	this.show = true;
 	this.draw = function(){
 
@@ -85,12 +84,9 @@ function Misil(x,y){
 		}
 
 	};
-	this.move = function(){
-
+	this.move = function(){		
 		
-		
-		this.y -= this.vy;
-		
+		this.y -= this.vy;		
 		
 	};
 }
@@ -128,12 +124,7 @@ function Nave(){
 		
 	};
 	this.shoot = function() {
-		// Simplemente se crea un misil base para la nave en x, y 
-		//
-		//
-		//			  !	  misil base en x, y
-		//			 # #
-		//			##### nave
+		
 		misiles.push(new Misil (this.x, this.y));
 	};
 }
@@ -189,22 +180,13 @@ function draw(){
 	
 }
 
-function hayChoque(misil,mounstro){
+function hayChoque(misil,enemigo){
 
-	var x1 = misil.x + (misil.w)/2;
-	var y1 = misil.y + (misil.h)/2;
+	return enemigo.x + enemigo.w > misil.x &&
+			misil.x + misil.w > enemigo.x &&
+			enemigo.y + enemigo.h > misil.y &&
+			misil.y + misil.h > enemigo.y
 
-	var x2 = mounstro.x + (mounstro.w)/2;
-	var y2 = mounstro.y + (mounstro.h)/2;
-
-	//alert("x1 :" + x1 +", x2 :" +x2 + "y1 :" + y1 +", y2 :" + y2 );
-
-	var d = Math.sqrt( Math.pow((x1-x2),2) + Math.pow((y1-y2),2) );
-	var dmin= (mounstro.h)/2 + (misil.h)/2;
-	//alert("d :" + d +", dmin :" +dmin);
-	
-	if(d<=dmin) return true;
-	else return false;
 }
 
 function colision(){
@@ -228,10 +210,6 @@ function colision(){
 		}
 	}
 
-	//Para cuando choquen enemigos con la nave 
-	//for(var i = 0; i < enemigos.length; i++ )
-	// 	if(enemigos[i].show && hayChoque( enemigos[i], new Nave(nave.x, nave.y)) )
-			//Hacer algo: perder una vida || perder juego || mostrar puntajes || reiniciar
 }
 
 var gameLoop = function(){
